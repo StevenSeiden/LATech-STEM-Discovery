@@ -1,0 +1,63 @@
+' {$STAMP BS2}
+' {$PBASIC 2.5}
+
+X         VAR Byte
+F         VAR Byte
+B         VAR Byte
+L         VAR Byte
+R         VAR Byte
+
+CHANNEL   CON $0E    'channel
+BAUD      CON 84     ' Baud rate, 9600, 8-N-1, non-inverted, on BS2.
+
+RX        PIN 0      ' Receive Pin
+TX        PIN 2      ' Transmit Pin
+
+GOSUB EstablishConnection
+
+DO
+X=0
+F=IN6
+B=IN4
+L=IN3
+R=IN5
+
+IF F=1 AND B=0 AND R=0 AND L=0 THEN
+X="a"
+ELSEIF F=0 AND B=1 AND R=0 AND L=0 THEN
+X="b"
+ELSEIF F=1 AND B=0 AND R=1 AND L=0 THEN
+X="c"
+ELSEIF F=1 AND B=0 AND R=0 AND L=1 THEN
+X="d"
+ELSEIF F=0 AND B=1 AND R=1 AND L=0 THEN
+X="e"
+ELSEIF F=0 AND B=1 AND R=0 AND L=1 THEN
+X="f"
+ELSEIF F=0 AND B=0 AND R=1 AND L=0 THEN
+X="g"
+ELSEIF F=0 AND B=0 AND R=0 AND L=1 THEN
+X="h"
+ELSE
+X="n"
+ENDIF
+
+  DEBUG "X="
+  DEBUG X, CR
+
+  SEROUT TX, BAUD, [DEC X, CR, CR]
+
+  PAUSE 10
+LOOP
+END
+
+EstablishConnection:
+  HIGH TX
+  DEBUG CLS, "Configuring XBee..."
+  PAUSE 2000                                ' Guard time for command sequence
+  SEROUT TX, BAUD,["+++"]                   ' Enter command mode
+  PAUSE 2000                                ' Guard time for command sequence
+  SEROUT TX, BAUD, ["ATCH ", HEX CHANNEL, CR]  ' Set channel
+  PAUSE 2000
+  DEBUG "Configuration Complete!",CR
+  RETURN

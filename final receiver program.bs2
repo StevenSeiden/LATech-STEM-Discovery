@@ -1,0 +1,99 @@
+
+' {$STAMP BS2}
+' {$PBASIC 2.5}
+
+RX          PIN 0          ' Receive Pin
+TX          PIN 2          ' Transmit Pin
+X           VAR Byte
+counter     VAR Byte
+
+center      CON 650
+right       CON 750
+left        CON 540
+fullstop    CON 750
+slowforward CON 680
+slowback    CON 820
+
+CHANNEL     CON $0E
+BAUD        CON 84
+
+GOSUB EstablishConnection
+
+DO
+  SERIN RX, BAUD, [DEC X]   ' Receive Data
+
+  DEBUG "X="
+  DEBUG X, CR
+
+  IF X="a" THEN
+  GOSUB SlowStraightForward
+  ELSEIF X="b" THEN
+  GOSUB SlowStraightBackward
+  ELSEIF X="c" THEN
+  GOSUB SlowRightTurn
+  ELSEIF X="d" THEN
+  GOSUB SlowLeftTurn
+  ELSEIF X="e" THEN
+  GOSUB SlowRightBack
+  ELSEIF X="f" THEN
+  GOSUB SlowLeftBack
+  ELSEIF X="g" THEN
+  GOSUB SteerRight
+  ELSEIF X="h" THEN
+  GOSUB SteerLeft
+  ENDIF
+
+LOOP
+END
+
+SlowStraightForward:
+PULSOUT 14, slowforward
+PULSOUT 12, center
+RETURN
+
+SlowStraightBackward:
+PULSOUT 14, slowback
+PULSOUT 12, center
+RETURN
+
+SlowRightTurn:
+PULSOUT 14, right
+PULSOUT 12, center
+RETURN
+
+SlowLeftTurn:
+PULSOUT 14, left
+PULSOUT 12, center
+RETURN
+
+SlowRightBack:
+PULSOUT 14, slowback
+PULSOUT 12, right
+RETURN
+
+SlowLeftBack:
+PULSOUT 14, slowback
+PULSOUT 12, left
+RETURN
+
+SteerRight:
+PULSOUT 14, center
+PULSOUT 12, right
+RETURN
+
+SteerLeft:
+PULSOUT 14, center
+PULSOUT 12, left
+RETURN
+
+
+EstablishConnection:
+  HIGH TX
+  DEBUG CLS, "Configuring XBee..."
+  PAUSE 2000
+  SEROUT TX, BAUD, ["+++"]
+  PAUSE 2000
+  SEROUT TX, BAUD, ["ATCH ", HEX CHANNEL, CR]
+  PAUSE 2000
+  DEBUG "Configuration Complete!", CR
+  RETURN
